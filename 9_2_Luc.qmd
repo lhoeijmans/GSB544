@@ -1,0 +1,181 @@
+---
+jupyter: python3
+---
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/, height: 313}
+import pandas as pd
+from sklearn.pipeline import Pipeline
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import cross_val_score
+from sklearn.tree import plot_tree
+from plotnine import *
+
+
+ha = pd.read_csv("https://www.dropbox.com/s/aohbr6yb9ifmc8w/heart_attack.csv?dl=1")
+
+
+ha = pd.read_csv("https://www.dropbox.com/s/aohbr6yb9ifmc8w/heart_attack.csv?dl=1")
+ha["cp_is_3"] = (ha["cp"] == 3) * 1
+ha["cp_is_2"] = (ha["cp"] == 2) * 1
+ha["cp_is_1"] = (ha["cp"] == 1) * 1
+ha["cp_is_0"] = (ha["cp"] == 0) * 1
+
+ha["cp"] = ha["cp"].astype("str")
+print(ha["cp"].value_counts().sort_index())
+ha.head()
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/, height: 157}
+X = ha[["trtbps", "chol", "age"]]
+y = ha["cp"]
+
+knn_model =Pipeline(
+    [("scale", StandardScaler()),
+    ("model", KNeighborsClassifier(n_neighbors=5))])
+
+knn_model.fit(X, y)
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/}
+cv_scores = cross_val_score(knn_model, X, y, cv=5, scoring="accuracy")
+cv_scores.mean()
+
+cross_val_score(knn_model, X, y,cv=5, scoring="f1_macro").mean()
+
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/}
+precision_cp0 = cross_val_score(knn_model, X, ha["cp_is_0"], cv=5, scoring="precision").mean()
+
+recall_cp0 = cross_val_score(knn_model, X, ha["cp_is_0"], cv=5, scoring="recall").mean()
+
+f1score_cp0 = cross_val_score(knn_model, X, ha["cp_is_0"], cv=5, scoring="f1").mean()
+
+precision_cp0, recall_cp0, f1score_cp0
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/}
+precision_cp1 = cross_val_score(knn_model, X, ha["cp_is_1"], cv=5, scoring="precision").mean()
+
+recall_cp1 = cross_val_score(knn_model, X, ha["cp_is_1"], cv=5, scoring="recall").mean()
+
+f1score_cp1 = cross_val_score(knn_model, X, ha["cp_is_1"], cv=5, scoring="f1").mean()
+
+precision_cp1, recall_cp1, f1score_cp1
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/}
+cross_val_score(knn_model, X, ha["cp_is_1"], cv=5, scoring="precision")
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/}
+cross_val_score(knn_model, X, ha["cp_is_1"], cv=5, scoring="recall")
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/}
+precision_cp2 = cross_val_score(knn_model, X, ha["cp_is_2"], cv=5, scoring="precision").mean()
+
+recall_cp2 = cross_val_score(knn_model, X, ha["cp_is_2"], cv=5, scoring="recall").mean()
+
+f1score_cp2 = cross_val_score(knn_model, X, ha["cp_is_2"], cv=5, scoring="f1").mean()
+
+precision_cp2, recall_cp2, f1score_cp2
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/}
+precision_cp3 = cross_val_score(knn_model, X, ha["cp_is_3"], cv=5, scoring="precision").mean()
+
+recall_cp3 = cross_val_score(knn_model, X, ha["cp_is_3"], cv=5, scoring="recall").mean()
+
+f1score_cp3 = cross_val_score(knn_model, X, ha["cp_is_3"], cv=5, scoring="f1").mean()
+
+precision_cp3, recall_cp3, f1score_cp3
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/, height: 157}
+dt_model =Pipeline(
+    [("scale", StandardScaler()),
+    ("model", DecisionTreeClassifier(max_depth=2))]
+)
+
+dt_model.fit(X, y)
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/, height: 567}
+plot_tree(dt_model.named_steps["model"], feature_names=["trtbps", "chol", "age"], filled=True)
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/, height: 157}
+X = ha[["trtbps", "chol", "age"]]
+y = ha["cp_is_3"]
+
+logistic_model =Pipeline(
+    [("scale", StandardScaler()),
+    ("model", LogisticRegression())])
+
+logistic_model.fit(X, y)
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/}
+cross_val_score(logistic_model, X, y, cv=5, scoring="precision").mean()
+
+cross_val_score(logistic_model, X, y, cv=5, scoring="recall").mean()
+
+cross_val_score(logistic_model, X, y, cv=5, scoring="f1").mean()
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/, height: 157}
+X = ha[["trtbps", "chol", "age"]]
+y = ha["cp_is_0"]
+
+logistic_model =Pipeline(
+    [("scale", StandardScaler()),
+    ("model", LogisticRegression())])
+
+logistic_model.fit(X, y)
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/}
+cross_val_score(logistic_model, X, y, cv=5, scoring="precision").mean()
+cross_val_score(logistic_model, X, y, cv=5, scoring="recall").mean()
+cross_val_score(logistic_model, X, y, cv=5, scoring="f1").mean()
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/, height: 157}
+ha_01 = ha[(ha["cp"] == "0") | (ha["cp"] == "1")]
+
+X = ha_01[["trtbps", "chol", "age"]]
+y = ha_01["cp"]
+
+
+logistic_model =Pipeline(
+    [("scale", StandardScaler()),
+    ("model", LogisticRegression())])
+
+logistic_model.fit(X, y)
+```
+
+```{python}
+#| colab: {base_uri: https://localhost:8080/}
+cross_val_score(logistic_model, X, y, cv=5, scoring="roc_auc").mean()
+```
+
